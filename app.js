@@ -4,6 +4,10 @@
   var SUBFORM_FIELDS = ["Suburbs", "Option_Notes", "Special_Criteria"];
   var PER_PAGE = 200;
   var MAX_PAGES = 10; // safety cap: 10 x 200 = 2000 deals
+  var SUBFORM_CONCURRENCY = 5; // how many per-record subform fetches to run at once
+
+  var EXCLUDED_STAGES = ["Closed-Lost to Competition", "Closed Lost", "Settlement"];
+  var EXCLUDED_TAG_NAME = "On Hold";
 
   var allDeals = [];
 
@@ -29,8 +33,22 @@
     return escapeHtml(value);
   }
 
-  // Fetch one page of Deals with all fields (subform data is included automatically
-  // in the full record response - no separate query needed).
+  // Excludes deals in a closed-out stage, or tagged "On Hold".
+  function shouldIncludeDeal(deal) {
+    if (EXCLUDED_STAGES.indexOf(deal.Stage) !== -1) {
+      return false;
+    }
+    var tags = deal.Tag || [];
+    var hasExcludedTag = tags.some(function (tag) {
+      return tag && tag.name === EXCLUDED_TAG_NAME;
+    });
+    return !hasExcludedTag;
+  }
+
+  // Fetch one page of Deals with all fields.
+  // Note: the Zoho CRM API only includes subform data when a SPECIFIC record is
+  // fetched by ID - it is never included in this kind of bulk/list call, even
+  // though every other field comes through fine. See fetchSubformsForDeals below.
   function fetchDealsPage(page) {
     return ZOHO.CRM.API.getAllRecords({
       Entity: "Deals",
@@ -55,8 +73,12 @@
         if (moreRecords && page < MAX_PAGES) {
           loadPage(page + 1);
         } else {
-          setStatus(allDeals.length + " deal(s) loaded");
-          render(allDeals);
+          allDeals = allDeals.filter(shouldIncludeDeal);
+          setStatus("Loading search criteria for " + allDeals.length + " deal(s)...");
+          fetchSubformsForDeals(allDeals).then(function () {
+            setStatus(allDeals.length + " deal(s) loaded");
+            render(allDeals);
+          });
         }
       }, function (error) {
         console.error("Failed to fetch Deals:", error);
@@ -66,6 +88,39 @@
     }
 
     loadPage(1);
+  }
+
+  // Fetches each deal's full record individually (in small concurrent batches)
+  // purely to pull its subform data, and merges it back onto the deal objects
+  // already loaded via the list call above.
+  function fetchSubformsForDeals(deals) {
+    var index = 0;
+
+    function runNextBatch() {
+      var batch = deals.slice(index, index + SUBFORM_CONCURRENCY);
+      index += SUBFORM_CONCURRENCY;
+
+      if (batch.length === 0) {
+        return Promise.resolve();
+      }
+
+      var batchPromises = batch.map(function (deal) {
+        return ZOHO.CRM.API.getRecord({ Entity: "Deals", RecordID: deal.id }).then(
+          function (response) {
+            var fullRecord = response && response.data && response.data[0];
+            deal[SUBFORM_API_NAME] = fullRecord ? (fullRecord[SUBFORM_API_NAME] || []) : [];
+          },
+          function (error) {
+            console.error("Failed to fetch subform for deal " + deal.id + ":", error);
+            deal[SUBFORM_API_NAME] = [];
+          }
+        );
+      });
+
+      return Promise.all(batchPromises).then(runNextBatch);
+    }
+
+    return runNextBatch();
   }
 
   function showError(message) {
