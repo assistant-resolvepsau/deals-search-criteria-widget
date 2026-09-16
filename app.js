@@ -153,8 +153,8 @@
     return '<div class="deal-card" data-search="' +
       escapeHtml((deal.Brief_No || "") + " " + areaOfInterestText).toLowerCase() +
       '">' +
+      '<div class="deal-name">' + escapeHtml(deal.Deal_Name || "-") + '</div>' +
       '<div class="deal-header">' +
-        '<div class="field"><div class="field-label">Deal Name</div><div class="field-value">' + escapeHtml(deal.Deal_Name || "-") + '</div></div>' +
         '<div class="field"><div class="field-label">Brief No</div><div class="field-value">' + escapeHtml(deal.Brief_No || "-") + '</div></div>' +
         '<div class="field"><div class="field-label">Area of Interest</div><div class="field-value">' + formatMultiSelect(deal.Area_of_Interest) + '</div></div>' +
         '<div class="field"><div class="field-label">Estimated Budget</div><div class="field-value">' + escapeHtml(deal.Estimated_Budget || "-") + '</div></div>' +
