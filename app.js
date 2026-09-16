@@ -1,5 +1,5 @@
   // ---- Configuration: field API names ----
-  var DEAL_FIELDS = ["Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
+  var DEAL_FIELDS = ["Deal_Name" "Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
   var SUBFORM_API_NAME = "Search_Criteria_Options";
   var SUBFORM_FIELDS = ["Suburbs", "Option_Notes", "Special_Criteria"];
   var PER_PAGE = 200;
@@ -154,6 +154,7 @@
       escapeHtml((deal.Brief_No || "") + " " + areaOfInterestText).toLowerCase() +
       '">' +
       '<div class="deal-header">' +
+        '<div class="field"><div class="field-label">Deal Name</div><div class="field-value">' + escapeHtml(deal.Deal_Name || "-") + '</div></div>' +
         '<div class="field"><div class="field-label">Brief No</div><div class="field-value">' + escapeHtml(deal.Brief_No || "-") + '</div></div>' +
         '<div class="field"><div class="field-label">Area of Interest</div><div class="field-value">' + formatMultiSelect(deal.Area_of_Interest) + '</div></div>' +
         '<div class="field"><div class="field-label">Estimated Budget</div><div class="field-value">' + escapeHtml(deal.Estimated_Budget || "-") + '</div></div>' +
