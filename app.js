@@ -1,5 +1,5 @@
   // ---- Configuration: field API names ----
-  var DEAL_FIELDS = ["Deal_Name" "Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
+  var DEAL_FIELDS = ["Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
   var SUBFORM_API_NAME = "Search_Criteria_Options";
   var SUBFORM_FIELDS = ["Suburbs", "Option_Notes", "Special_Criteria"];
   var PER_PAGE = 200;
