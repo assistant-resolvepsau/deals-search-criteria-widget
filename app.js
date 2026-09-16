@@ -7,7 +7,7 @@
   var SUBFORM_CONCURRENCY = 5; // how many per-record subform fetches to run at once
 
   var EXCLUDED_STAGES = ["Closed-Lost to Competition", "Closed Lost", "Settlement"];
-  var EXCLUDED_TAG_NAME = "On Hold";
+  var EXCLUDED_TAG_NAME = ["On Hold", "O&A Accepted"];
 
   var allDeals = [];
 
