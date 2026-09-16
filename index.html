@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deals - Search Criteria Overview</title>
+<script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
+<style>
+  :root {
+    --border: #e2e5e9;
+    --header-bg: #f7f8fa;
+    --accent: #1a73e8;
+    --text: #26292c;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: #fff;
+    font-size: 13px;
+  }
+  #toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 5;
+  }
+  #searchBox {
+    flex: 1;
+    max-width: 320px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  #status { color: var(--muted); }
+  #refreshBtn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--header-bg);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  #refreshBtn:hover { background: #eef0f2; }
+
+  #content { padding: 14px; }
+
+  .deal-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .deal-header {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .deal-header .field {
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+  }
+  .deal-header .field:last-child { border-right: none; }
+  .field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .field-value { font-weight: 600; word-break: break-word; }
+
+  table.subform {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.subform th, table.subform td {
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.subform th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    font-weight: 600;
+    background: #fbfbfc;
+  }
+  table.subform tr:last-child td { border-bottom: none; }
+  .empty-subform {
+    padding: 10px 14px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  #emptyState, #errorState {
+    padding: 40px 14px;
+    text-align: center;
+    color: var(--muted);
+  }
+  #errorState { color: #c0392b; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <input id="searchBox" type="text" placeholder="Filter by Brief No or Area of Interest..." />
+  <span id="status">Loading...</span>
+  <button id="refreshBtn">Refresh</button>
+</div>
+
+<div id="content"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
