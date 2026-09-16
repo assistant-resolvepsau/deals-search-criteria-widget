@@ -144,9 +144,9 @@
       var combined = [areaOfInterestText, suburbsText].filter(Boolean).join(", ") || "-";
 
       return '<div class="subform-entry">' +
-        '<div class="subform-line"><span class="field-label">Option Notes</span><div class="field-value">' + escapeHtml(row.Option_Notes || "-") + '</div></div>' +
-        '<div class="subform-line"><span class="field-label">Special Criteria</span><div class="field-value">' + escapeHtml(row.Special_Criteria || "-") + '</div></div>' +
-        '<div class="subform-line"><span class="field-label">Area of Interest + Suburbs</span><div class="field-value">' + escapeHtml(combined) + '</div></div>' +
+        '<div class="subform-line"><span class="field-label">Brief</span><div class="field-value">' + escapeHtml(row.Option_Notes || "-") + '</div></div>' +
+        '<div class="subform-line"><span class="field-label">Notes</span><div class="field-value">' + escapeHtml(row.Special_Criteria || "-") + '</div></div>' +
+        '<div class="subform-line"><span class="field-label">Areas</span><div class="field-value">' + escapeHtml(combined) + '</div></div>' +
         '</div>';
     }).join("");
 
