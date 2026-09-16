@@ -1,5 +1,5 @@
   // ---- Configuration: field API names ----
-  var DEAL_FIELDS = ["Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
+  var DEAL_FIELDS = ["Deal_Name", "Brief_No", "Area_of_Interest", "Estimated_Budget", "Purchase_Type"];
   var SUBFORM_API_NAME = "Search_Criteria_Options";
   var SUBFORM_FIELDS = ["Suburbs", "Option_Notes", "Special_Criteria"];
   var PER_PAGE = 200;
@@ -7,7 +7,7 @@
   var SUBFORM_CONCURRENCY = 5; // how many per-record subform fetches to run at once
 
   var EXCLUDED_STAGES = ["Closed-Lost to Competition", "Closed Lost", "Settlement"];
-  var EXCLUDED_TAG_NAME = ["On Hold", "O&A Accepted"];
+  var EXCLUDED_TAGS = ["On Hold", "Roman", "O&A Accepted"];
 
   var allDeals = [];
 
@@ -23,24 +23,28 @@
       .replace(/>/g, "&gt;");
   }
 
-  // Multi-select picklists come back from the API as an array of strings.
-  function formatMultiSelect(value) {
-    if (value === null || value === undefined) return "-";
-    if (Array.isArray(value)) {
-      if (value.length === 0) return "-";
-      return escapeHtml(value.join(", "));
-    }
-    return escapeHtml(value);
+  // Returns a plain (unescaped) string for a value that may be a plain string,
+  // a multi-select array, or empty/null.
+  function toPlainText(value) {
+    if (value === null || value === undefined) return "";
+    if (Array.isArray(value)) return value.join(", ");
+    return String(value);
   }
 
-  // Excludes deals in a closed-out stage, or tagged "On Hold".
+  // Multi-select picklists come back from the API as an array of strings.
+  function formatMultiSelect(value) {
+    var text = toPlainText(value);
+    return text ? escapeHtml(text) : "-";
+  }
+
+  // Excludes deals in a closed-out stage, or tagged with any excluded tag.
   function shouldIncludeDeal(deal) {
     if (EXCLUDED_STAGES.indexOf(deal.Stage) !== -1) {
       return false;
     }
     var tags = deal.Tag || [];
     var hasExcludedTag = tags.some(function (tag) {
-      return tag && tag.name === EXCLUDED_TAG_NAME;
+      return tag && EXCLUDED_TAGS.indexOf(tag.name) !== -1;
     });
     return !hasExcludedTag;
   }
@@ -128,38 +132,41 @@
     content.innerHTML = '<div id="errorState">' + escapeHtml(message) + '</div>';
   }
 
-  function buildSubformTable(subformRows) {
+  function buildSubformSection(deal, subformRows) {
     if (!subformRows || subformRows.length === 0) {
       return '<div class="empty-subform">No search criteria options on this deal</div>';
     }
-    var rowsHtml = subformRows.map(function (row) {
-      return "<tr>" +
-        "<td>" + escapeHtml(row.Suburbs) + "</td>" +
-        "<td>" + escapeHtml(row.Option_Notes) + "</td>" +
-        "<td>" + escapeHtml(row.Special_Criteria) + "</td>" +
-        "</tr>";
+
+    var areaOfInterestText = toPlainText(deal.Area_of_Interest);
+
+    var entriesHtml = subformRows.map(function (row) {
+      var suburbsText = toPlainText(row.Suburbs);
+      var combined = [areaOfInterestText, suburbsText].filter(Boolean).join(", ") || "-";
+
+      return '<div class="subform-entry">' +
+        '<div class="subform-line"><span class="field-label">Option Notes</span><div class="field-value">' + escapeHtml(row.Option_Notes || "-") + '</div></div>' +
+        '<div class="subform-line"><span class="field-label">Special Criteria</span><div class="field-value">' + escapeHtml(row.Special_Criteria || "-") + '</div></div>' +
+        '<div class="subform-line"><span class="field-label">Area of Interest + Suburbs</span><div class="field-value">' + escapeHtml(combined) + '</div></div>' +
+        '</div>';
     }).join("");
 
-    return '<table class="subform">' +
-      "<thead><tr><th>Suburbs</th><th>Option Notes</th><th>Special Criteria</th></tr></thead>" +
-      "<tbody>" + rowsHtml + "</tbody>" +
-      "</table>";
+    return entriesHtml;
   }
 
   function buildDealCard(deal) {
     var subformRows = deal[SUBFORM_API_NAME] || [];
 
-    var areaOfInterestText = Array.isArray(deal.Area_of_Interest) ? deal.Area_of_Interest.join(" ") : (deal.Area_of_Interest || "");
+    var areaOfInterestText = toPlainText(deal.Area_of_Interest);
     return '<div class="deal-card" data-search="' +
-      escapeHtml((deal.Brief_No || "") + " " + areaOfInterestText).toLowerCase() +
+      escapeHtml((deal.Brief_No || "") + " " + (deal.Deal_Name || "") + " " + areaOfInterestText).toLowerCase() +
       '">' +
       '<div class="deal-header">' +
-        '<div class="field"><div class="field-label">Brief No</div><div class="field-value">' + escapeHtml(deal.Brief_No || "-") + '</div></div>' +
-        '<div class="field"><div class="field-label">Area of Interest</div><div class="field-value">' + formatMultiSelect(deal.Area_of_Interest) + '</div></div>' +
-        '<div class="field"><div class="field-label">Estimated Budget</div><div class="field-value">' + escapeHtml(deal.Estimated_Budget || "-") + '</div></div>' +
+        '<div class="field"><div class="field-label">Deal Name</div><div class="field-value">' + escapeHtml(deal.Deal_Name || "-") + '</div></div>' +
         '<div class="field"><div class="field-label">Purchase Type</div><div class="field-value">' + escapeHtml(deal.Purchase_Type || "-") + '</div></div>' +
+        '<div class="field"><div class="field-label">Brief No</div><div class="field-value">' + escapeHtml(deal.Brief_No || "-") + '</div></div>' +
+        '<div class="field"><div class="field-label">Estimated Budget</div><div class="field-value">' + escapeHtml(deal.Estimated_Budget || "-") + '</div></div>' +
       '</div>' +
-      buildSubformTable(subformRows) +
+      buildSubformSection(deal, subformRows) +
       '</div>';
   }
 
@@ -182,7 +189,7 @@
     }
     var filtered = allDeals.filter(function (deal) {
       var areaOfInterestText = Array.isArray(deal.Area_of_Interest) ? deal.Area_of_Interest.join(" ") : (deal.Area_of_Interest || "");
-      var haystack = ((deal.Brief_No || "") + " " + areaOfInterestText).toLowerCase();
+      var haystack = ((deal.Brief_No || "") + " " + (deal.Deal_Name || "") + " " + areaOfInterestText).toLowerCase();
       return haystack.indexOf(term) !== -1;
     });
     render(filtered);

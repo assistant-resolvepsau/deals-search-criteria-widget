@@ -60,16 +60,21 @@
   }
   .deal-header {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 2fr 1fr;
     gap: 0;
     background: var(--header-bg);
     border-bottom: 1px solid var(--border);
   }
   .deal-header .field {
     padding: 10px 14px;
+  }
+  .deal-header .field:nth-child(1),
+  .deal-header .field:nth-child(2) {
+    border-bottom: 1px solid var(--border);
+  }
+  .deal-header .field:nth-child(odd) {
     border-right: 1px solid var(--border);
   }
-  .deal-header .field:last-child { border-right: none; }
   .field-label {
     font-size: 11px;
     text-transform: uppercase;
@@ -79,25 +84,14 @@
   }
   .field-value { font-weight: 600; word-break: break-word; }
 
-  table.subform {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  table.subform th, table.subform td {
-    text-align: left;
-    padding: 8px 14px;
+  .subform-entry {
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
-    vertical-align: top;
   }
-  table.subform th {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--muted);
-    font-weight: 600;
-    background: #fbfbfc;
-  }
-  table.subform tr:last-child td { border-bottom: none; }
+  .subform-entry:last-child { border-bottom: none; }
+  .subform-line { margin-bottom: 6px; }
+  .subform-line:last-child { margin-bottom: 0; }
+  .subform-line .field-value { font-weight: 400; }
   .empty-subform {
     padding: 10px 14px;
     color: var(--muted);
